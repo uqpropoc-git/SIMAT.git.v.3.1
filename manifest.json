@@ -1,0 +1,24 @@
+{
+  "name": "Sistem Input Muka Air Tanah PT Multisarana Avindo",
+  "short_name": "Input MAT",
+  "description": "Aplikasi Pencatatan dan Monitoring Muka Air Tanah Offline-First PT Multisarana Avindo",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#0284c7",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3105/3105807.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3105/3105807.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
