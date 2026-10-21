@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sistem Input Muka Air Tanah - PT Multisarana Avindo</title>
+  
+  <!-- Manifest & PWA Configuration -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0284c7">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .tab-active { border-bottom: 3px solid #0284c7; color: #0284c7; font-weight: 600; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- TOP BAR -->
+  <header class="bg-sky-700 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-water text-xl"></i>
+        <h1 class="font-bold text-lg leading-tight">Input MAT PT Multisarana Avindo</h1>
+      </div>
+      <div class="flex items-center space-x-3 text-xs">
+        <span id="connectionBadge" class="px-2 py-1 rounded-full bg-emerald-500 text-white font-medium flex items-center gap-1">
+          <i class="fa-solid fa-wifi"></i> <span id="connText">Online</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 mt-4 flex-1 w-full pb-6">
+
+    <!-- USER PETUGAS BANNER -->
+    <div class="bg-white p-3 rounded-lg shadow-sm border border-slate-200 mb-4 flex items-center gap-3">
+      <i class="fa-solid fa-user-gear text-sky-600 text-xl"></i>
+      <div class="flex-1">
+        <label class="block text-xs font-semibold text-slate-500 uppercase">Nama Petugas Lapangan</label>
+        <input type="text" id="namaPetugas" placeholder="Masukkan nama Anda..." class="w-full text-sm font-semibold text-slate-700 focus:outline-none border-b border-transparent focus:border-sky-500">
+      </div>
+    </div>
+
+    <!-- TAB NAVIGATION -->
+    <div class="flex bg-white rounded-t-lg border-b border-slate-200 shadow-sm text-sm text-slate-600">
+      <button onclick="switchTab('formTab')" id="btnFormTab" class="flex-1 py-3 text-center tab-active flex justify-center items-center gap-2">
+        <i class="fa-solid fa-pen-to-square"></i> Form Input
+      </button>
+      <button onclick="switchTab('draftTab')" id="btnDraftTab" class="flex-1 py-3 text-center flex justify-center items-center gap-2 relative">
+        <i class="fa-solid fa-box-archive"></i> Draft (<span id="draftCount">0</span>)
+      </button>
+      <button onclick="switchTab('historyTab')" id="btnHistoryTab" class="flex-1 py-3 text-center flex justify-center items-center gap-2">
+        <i class="fa-solid fa-clock-rotate-left"></i> Riwayat
+      </button>
+    </div>
+
+    <!-- CONTENT CONTAINERS -->
+    <div class="bg-white rounded-b-lg shadow-sm p-4 border-x border-b border-slate-200">
+
+      <!-- TAB 1: FORM INPUT -->
+      <section id="formTabContent">
+        <form id="matForm" onsubmit="handleSaveForm(event)" class="space-y-4">
+          
+          <!-- Informasi Lokasi & Sumur -->
+          <div class="bg-slate-50 p-3 rounded-md border border-slate-200 space-y-3">
+            <h3 class="font-semibold text-sm text-sky-800 border-b pb-1"><i class="fa-solid fa-location-dot"></i> Informasi Sumur & Lokasi</h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Nama / ID Sumur *</label>
+                <select id="namaSumur" required onchange="autoSelectDetailSumur()" class="w-full p-2 border rounded-md text-sm bg-white focus:ring-1 focus:ring-sky-500 focus:outline-none">
+                  <option value="" disabled selected>-- Pilih Sumur --</option>
+                  <option value="SP-PITJATAH">SP-PITJATAH</option>
+                  <option value="SP-PIT Z (WSJ)">SP-PIT Z (WSJ)</option>
+                  <option value="SP-BUG-04">SP-BUG-04</option>
+                  <option value="SP-BUG-03R">SP-BUG-03R</option>
+                  <option value="SP-BUG-06">SP-BUG-06</option>
+                  <option value="SP-BUG-05A">SP-BUG-05A</option>
+                  <option value="SP-BUG-01">SP-BUG-01</option>
+                  <option value="SP-BUG-02">SP-BUG-02</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Lokasi / Area *</label>
+                <select id="lokasi" required class="w-full p-2 border rounded-md text-sm bg-white focus:ring-1 focus:ring-sky-500 focus:outline-none">
+                  <option value="" disabled selected>-- Pilih Lokasi / Area --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kondisi Fisik Lapangan -->
+          <div class="bg-slate-50 p-3 rounded-md border border-slate-200 space-y-3">
+            <h3 class="font-semibold text-sm text-sky-800 border-b pb-1"><i class="fa-solid fa-cloud-sun text-amber-500"></i> Kondisi Lapangan</h3>
+            
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Cuaca</label>
+                <select id="cuaca" class="w-full p-2 border rounded-md text-sm bg-white">
+                  <option value="Cerah">Cerah</option>
+                  <option value="Berawan">Mendung</option>
+                  <option value="Hujan">Hujan</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Kondisi Air</label>
+                <select id="kondisiAir" class="w-full p-2 border rounded-md text-sm bg-white">
+                  <option value="Artesis">Artesis</option>
+                  <option value="Normal">Normal</option>
+                  <option value="Kering">Kering</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Fisik Air</label>
+                <select id="kondisiFisikAir" class="w-full p-2 border rounded-md text-sm bg-white">
+                  <option value="Jernih">Jernih</option>
+                  <option value="Agak Jernih">Agak Jernih</option>
+                  <option value="Keruh">Keruh</option>
+                  <option value="Agak Keruh">Agak Keruh</option>
+                  <option value="Kering">Kering</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pengukuran & Kalkulasi MAT -->
+          <div class="bg-sky-50 p-3 rounded-md border border-sky-200 space-y-3">
+            <h3 class="font-semibold text-sm text-sky-800 border-b border-sky-200 pb-1"><i class="fa-solid fa-ruler-vertical"></i> Parameter & Hasil Pengukuran (Meter)</h3>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Nilai Z (m)</label>
+                <input type="number" step="0.01" id="nilaiZ" value="0.00" readonly class="w-full p-2 border rounded-md text-sm bg-slate-100 text-slate-600 font-semibold cursor-not-allowed">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Tinggi Stick Pipa (m)</label>
+                <input type="number" step="0.01" id="tinggiStickPipa" value="0.00" readonly class="w-full p-2 border rounded-md text-sm bg-slate-100 text-slate-600 font-semibold cursor-not-allowed">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Kedalaman Sumur (m)</label>
+                <input type="number" step="0.01" id="kedalamanSumur" value="0.00" readonly class="w-full p-2 border rounded-md text-sm bg-slate-100 text-slate-600 font-semibold cursor-not-allowed">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Ukur 1 (m)</label>
+                <input type="number" step="0.01" id="pengukuran1" value="0.00" oninput="calculateMAT()" class="w-full p-2 border rounded-md text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Ukur 2 (m)</label>
+                <input type="number" step="0.01" id="pengukuran2" value="0.00" oninput="calculateMAT()" class="w-full p-2 border rounded-md text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Ukur 3 (m)</label>
+                <input type="number" step="0.01" id="pengukuran3" value="0.00" oninput="calculateMAT()" class="w-full p-2 border rounded-md text-sm">
+              </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-md border border-sky-300 grid grid-cols-2 gap-2 text-center">
+              <div>
+                <span class="block text-xs text-slate-500 font-medium">Rata-Rata Kedalaman</span>
+                <span id="txtRataRata" class="text-base font-bold text-slate-700">0.00 m</span>
+              </div>
+              <div>
+                <span class="block text-xs text-slate-500 font-medium">Total MAT</span>
+                <span id="txtMATTotal" class="text-base font-bold text-sky-700">0.00 m</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- FITUR UPLOAD FOTO KAMERA / SCREEN RECORD -->
+          <div class="bg-slate-50 p-3 rounded-md border border-slate-200 space-y-3">
+            <h3 class="font-semibold text-sm text-sky-800 border-b pb-1"><i class="fa-solid fa-camera"></i> Dokumentasi Lapangan</h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1"><i class="fa-solid fa-camera text-sky-600"></i> Ambil Foto (Kamera HP)</label>
+                <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100">
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1"><i class="fa-solid fa-video text-amber-600"></i> Galeri / Screen Record / Video</label>
+                <input type="file" id="videoInput" accept="image/*,video/*" multiple onchange="handleFileSelect(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100">
+              </div>
+            </div>
+
+            <p class="text-[10px] text-slate-500 italic">* Jika kamera tidak bisa terbuka otomatis, pilih berkas foto atau rekaman layar melalui tombol kanan.</p>
+
+            <div id="previewFoto" class="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2"></div>
+          </div>
+
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg shadow-md transition flex justify-center items-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i> Simpan Transaksi (Offline First)
+          </button>
+        </form>
+      </section>
+
+      <!-- TAB 2: DRAFT OFFLINE -->
+      <section id="draftTabContent" class="hidden space-y-3">
+        <div class="flex justify-between items-center border-b pb-2">
+          <h3 class="font-semibold text-sm text-slate-700">Daftar Draft Tersimpan di Perangkat</h3>
+          <button onclick="syncDataToServer()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1.5 rounded-md font-medium flex items-center gap-1">
+            <i class="fa-solid fa-rotate"></i> Sync Ke Server
+          </button>
+        </div>
+        <div id="draftList" class="space-y-2"></div>
+      </section>
+
+      <!-- TAB 3: RIWAYAT SERVER -->
+      <section id="historyTabContent" class="hidden space-y-3">
+        <div class="flex justify-between items-center border-b pb-2">
+          <h3 class="font-semibold text-sm text-slate-700">Data Terkini dari Server</h3>
+          <button onclick="loadHistoryData()" class="text-sky-600 hover:text-sky-800 text-xs font-medium">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh
+          </button>
+        </div>
+        <div id="historyList" class="space-y-2 text-xs"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-3 px-4 text-center text-xs text-slate-500 shadow-inner mt-auto">
+    <p class="font-medium">Created by <span class="font-bold text-sky-600">UQ & MAF</span></p>
+    <p class="text-[11px] text-slate-400 mt-0.5">&copy; <span id="currentYear"></span> PT Multisarana Avindo. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyfDzSNLh7K_01IwxOUgVVfwkUMKXAS-58LMixJgZyEEtjf3USOFUl_172zH6hMN755/exec";
+
+    document.getElementById('currentYear').innerText = new Date().getFullYear();
+
+    // Master Sumur Data (Inisialisasi awal dengan properti z)
+    let masterSumurData = [
+      { sumur: "SP-PITJATAH", lokasi: "0° 38' 46.593\" S - 117° 4' 47.274\" E", z: 10.00, tinggiStick: 0.50, kedalaman: 25.00 },
+      { sumur: "SP-PIT Z (WSJ)", lokasi: "0° 41' 40.356\" S - 117° 4' 7.545\" E", z: 12.50, tinggiStick: 0.60, kedalaman: 30.00 },
+      { sumur: "SP-BUG-04", lokasi: "0° 40' 22.416\" S - 117° 3' 11.797\" E", z: 8.00, tinggiStick: 0.45, kedalaman: 20.00 },
+      { sumur: "SP-BUG-03R", lokasi: "0° 40' 18.801\" S - 117° 3' 6.815\" E", z: 9.00, tinggiStick: 0.55, kedalaman: 22.50 },
+      { sumur: "SP-BUG-06", lokasi: "0° 41' 13.096\" S - 117° 2' 36.111\" E", z: 11.00, tinggiStick: 0.50, kedalaman: 18.00 },
+      { sumur: "SP-BUG-05A", lokasi: "0° 41' 8.569\" S - 117° 2' 31.711\" E", z: 10.50, tinggiStick: 0.40, kedalaman: 24.00 },
+      { sumur: "SP-BUG-01", lokasi: "0° 39' 38.674\" S - 117° 3' 51.496\" E", z: 7.50, tinggiStick: 0.50, kedalaman: 15.00 },
+      { sumur: "SP-BUG-02", lokasi: "0° 39' 43.852\" S - 117° 3' 58.420\" E", z: 8.50, tinggiStick: 0.50, kedalaman: 16.50 }
+    ];
+
+    // Populasi Opsi Lokasi Awal dari Master Data
+    function populateInitialLokasi() {
+      const lokasiSelect = document.getElementById('lokasi');
+      const uniqueLokasi = [...new Set(masterSumurData.map(item => item.lokasi).filter(Boolean))];
+      
+      lokasiSelect.innerHTML = '<option value="" disabled selected>-- Pilih Lokasi / Area --</option>';
+      uniqueLokasi.forEach(lok => {
+        const opt = document.createElement('option');
+        opt.value = lok;
+        opt.textContent = lok;
+        lokasiSelect.appendChild(opt);
+      });
+    }
+
+    populateInitialLokasi();
+
+    // Fungsi Auto Select Lokasi, Nilai Z, Tinggi Stick Pipa, dan Kedalaman Sumur saat Nama Sumur Dipilih
+    function autoSelectDetailSumur() {
+      const selectedSumur = document.getElementById('namaSumur').value;
+      const target = masterSumurData.find(item => item.sumur === selectedSumur);
+
+      if (target) {
+        const lokasiSelect = document.getElementById('lokasi');
+
+        if (target.lokasi) {
+          let optionExists = Array.from(lokasiSelect.options).some(opt => opt.value === target.lokasi);
+          
+          if (!optionExists) {
+            const newOpt = document.createElement('option');
+            newOpt.value = target.lokasi;
+            newOpt.text = target.lokasi;
+            lokasiSelect.add(newOpt);
+          }
+          
+          lokasiSelect.value = target.lokasi;
+        }
+
+        // Auto fill nilai Z, tinggi stick & kedalaman sumur
+        document.getElementById('nilaiZ').value = parseFloat(target.z || 0).toFixed(2);
+        document.getElementById('tinggiStickPipa').value = parseFloat(target.tinggiStick || 0).toFixed(2);
+        document.getElementById('kedalamanSumur').value = parseFloat(target.kedalaman || 0).toFixed(2);
+        
+        calculateMAT();
+      }
+    }
+
+    // INDEXEDDB ENGINE
+    let db;
+    const request = indexedDB.open("MAT_OfflineDB", 1);
+
+    request.onupgradeneeded = function(e) {
+      db = e.target.result;
+      if (!db.objectStoreNames.contains("transaksi")) {
+        db.createObjectStore("transaksi", { keyPath: "idTransaksi" });
+      }
+    };
+
+    request.onsuccess = function(e) {
+      db = e.target.result;
+      updateDraftCount();
+      loadDropdownOptions();
+    };
+
+    // LOCAL STORAGE PETUGAS
+    const namaPetugasInput = document.getElementById("namaPetugas");
+    namaPetugasInput.value = localStorage.getItem("namaPetugas") || "";
+    namaPetugasInput.addEventListener("input", () => {
+      localStorage.setItem("namaPetugas", namaPetugasInput.value);
+    });
+
+    // NETWORK MONITORING
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+
+    function updateOnlineStatus() {
+      const badge = document.getElementById("connectionBadge");
+      const text = document.getElementById("connText");
+      if (navigator.onLine) {
+        badge.className = "px-2 py-1 rounded-full bg-emerald-500 text-white font-medium flex items-center gap-1";
+        text.innerText = "Online";
+        loadDropdownOptions();
+      } else {
+        badge.className = "px-2 py-1 rounded-full bg-amber-500 text-white font-medium flex items-center gap-1";
+        text.innerText = "Offline";
+      }
+    }
+
+    // MEMUAT DROPDOWN & MASTER SUMUR DINAMIS DARI SERVER SPREADSHEET (Sheet Master_Sumur)
+    function loadDropdownOptions() {
+      if (!navigator.onLine) return;
+      fetch(`${API_URL}?action=getOptions`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success' && res.masterSumur && res.masterSumur.length > 0) {
+            masterSumurData = res.masterSumur;
+            
+            const selSumur = document.getElementById('namaSumur');
+            const curSumurVal = selSumur.value;
+            
+            selSumur.innerHTML = '<option value="" disabled selected>-- Pilih Sumur --</option>';
+            masterSumurData.forEach(item => {
+              const opt = document.createElement('option');
+              opt.value = item.sumur;
+              opt.textContent = item.sumur;
+              selSumur.appendChild(opt);
+            });
+
+            if (curSumurVal) {
+              selSumur.value = curSumurVal;
+            }
+
+            const selLokasi = document.getElementById('lokasi');
+            const curLokasiVal = selLokasi.value;
+            const uniqueLokasi = [...new Set(masterSumurData.map(item => item.lokasi).filter(Boolean))];
+            
+            selLokasi.innerHTML = '<option value="" disabled selected>-- Pilih Lokasi / Area --</option>';
+            uniqueLokasi.forEach(l => {
+              const opt = document.createElement('option');
+              opt.value = l;
+              opt.textContent = l;
+              selLokasi.appendChild(opt);
+            });
+
+            if (curLokasiVal) {
+              selLokasi.value = curLokasiVal;
+            }
+
+            if (selSumur.value) {
+              autoSelectDetailSumur();
+            }
+          }
+        })
+        .catch(err => console.log("Gagal memuat master sumur dari server: " + err));
+    }
+
+    // TAB SWITCHING
+    function switchTab(tabName) {
+      ['formTab', 'draftTab', 'historyTab'].forEach(t => {
+        document.getElementById(t + 'Content').classList.add('hidden');
+        document.getElementById('btn' + t.charAt(0).toUpperCase() + t.slice(1)).classList.remove('tab-active');
+      });
+
+      document.getElementById(tabName + 'Content').classList.remove('hidden');
+      document.getElementById('btn' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('tab-active');
+
+      if (tabName === 'draftTab') renderDrafts();
+      if (tabName === 'historyTab') loadHistoryData();
+    }
+
+    // KALKULASI REAL-TIME SESUAI RUMUS BARU: TOTAL MAT = Z - (rata-rata - tinggiStick)
+    function calculateMAT() {
+      const z = parseFloat(document.getElementById('nilaiZ').value) || 0;
+      const stick = parseFloat(document.getElementById('tinggiStickPipa').value) || 0;
+      const u1 = parseFloat(document.getElementById('pengukuran1').value) || 0;
+      const u2 = parseFloat(document.getElementById('pengukuran2').value) || 0;
+      const u3 = parseFloat(document.getElementById('pengukuran3').value) || 0;
+
+      const avg = (u1 + u2 + u3) / 3;
+      const totalMAT = z - (avg - stick);
+
+      document.getElementById('txtRataRata').innerText = avg.toFixed(2) + " m";
+      document.getElementById('txtMATTotal').innerText = totalMAT.toFixed(2) + " m";
+
+      return { avg: avg.toFixed(2), matTotal: totalMAT.toFixed(2) };
+    }
+
+    // MANAGEMENT MEDIA (FOTO/VIDEO/SCREEN RECORD)
+    let mediaBase64 = [];
+
+    function handleFileSelect(e) {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
+
+      let processed = 0;
+      files.forEach(file => {
+        const reader = new FileReader();
+        const isVideo = file.type.startsWith('video/');
+
+        reader.onload = function(event) {
+          if (isVideo) {
+            mediaBase64.push({ type: 'video', data: event.target.result });
+            processed++;
+            if (processed === files.length) {
+              renderMediaPreview();
+              e.target.value = '';
+            }
+          } else {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = function() {
+              const canvas = document.createElement('canvas');
+              const MAX_WIDTH = 800;
+              let scaleSize = 1;
+
+              if (img.width > MAX_WIDTH) {
+                scaleSize = MAX_WIDTH / img.width;
+              }
+
+              canvas.width = img.width * scaleSize;
+              canvas.height = img.height * scaleSize;
+
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+              mediaBase64.push({ type: 'image', data: dataUrl });
+
+              processed++;
+              if (processed === files.length) {
+                renderMediaPreview();
+                e.target.value = '';
+              }
+            };
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderMediaPreview() {
+      const preview = document.getElementById('previewFoto');
+      preview.innerHTML = '';
+
+      mediaBase64.forEach((item, index) => {
+        if (item.type === 'image') {
+          preview.innerHTML += `
+            <div class="relative group rounded-md overflow-hidden border shadow-sm bg-black">
+              <img src="${item.data}" class="h-20 w-full object-cover">
+              <button type="button" onclick="removeMedia(${index})" 
+                      class="absolute top-1 right-1 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] shadow hover:bg-red-700 transition"
+                      title="Hapus foto">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          `;
+        } else {
+          preview.innerHTML += `
+            <div class="relative group rounded-md overflow-hidden border shadow-sm bg-slate-800 flex flex-col justify-center items-center h-20 text-white p-1">
+              <i class="fa-solid fa-video text-xl text-amber-400"></i>
+              <span class="text-[9px] mt-1 truncate w-full text-center">Video / Rec</span>
+              <button type="button" onclick="removeMedia(${index})" 
+                      class="absolute top-1 right-1 bg-red-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] shadow hover:bg-red-700 transition"
+                      title="Hapus video">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          `;
+        }
+      });
+    }
+
+    function removeMedia(index) {
+      mediaBase64.splice(index, 1);
+      renderMediaPreview();
+    }
+
+    function resetMedia() {
+      mediaBase64 = [];
+      document.getElementById('cameraInput').value = '';
+      document.getElementById('videoInput').value = '';
+      renderMediaPreview();
+    }
+
+    // SIMPAN FORM KE INDEXEDDB
+    function handleSaveForm(e) {
+      e.preventDefault();
+      const calc = calculateMAT();
+      const idTransaksi = 'TRX-' + Date.now();
+
+      const fotosList = (typeof mediaBase64 !== 'undefined' && Array.isArray(mediaBase64) && mediaBase64.length > 0) 
+        ? mediaBase64.map(m => m.data || m) 
+        : [];
+
+      const item = {
+        idTransaksi: idTransaksi,
+        tanggalWaktu: new Date().toLocaleString('id-ID'),
+        namaPetugas: document.getElementById('namaPetugas').value || '-',
+        namaSumur: document.getElementById('namaSumur').value,
+        lokasi: document.getElementById('lokasi').value,
+        nilaiZ: document.getElementById('nilaiZ').value || 0,
+        cuaca: document.getElementById('cuaca').value,
+        kondisiAir: document.getElementById('kondisiAir').value,
+        kondisiFisikAir: document.getElementById('kondisiFisikAir').value,
+        tinggiStickPipa: document.getElementById('tinggiStickPipa').value || 0,
+        kedalamanSumur: document.getElementById('kedalamanSumur').value || 0,
+        pengukuran1: document.getElementById('pengukuran1').value || 0,
+        pengukuran2: document.getElementById('pengukuran2').value || 0,
+        pengukuran3: document.getElementById('pengukuran3').value || 0,
+        rataRata: calc.avg,
+        matTotal: calc.matTotal,
+        fotos: fotosList
+      };
+
+      const tx = db.transaction("transaksi", "readwrite");
+      const store = tx.objectStore("transaksi");
+      store.put(item);
+
+      tx.oncomplete = function() {
+        alert("Data berhasil disimpan ke Draft Offline!");
+        document.getElementById('matForm').reset();
+        resetMedia();
+        calculateMAT();
+        updateDraftCount();
+
+        if (navigator.onLine) syncDataToServer();
+      };
+    }
+
+    // RENDER DRAFT
+    function updateDraftCount() {
+      if (!db) return;
+      const tx = db.transaction("transaksi", "readonly");
+      const store = tx.objectStore("transaksi");
+      const req = store.count();
+      req.onsuccess = () => {
+        document.getElementById('draftCount').innerText = req.result;
+      };
+    }
+
+    function renderDrafts() {
+      const draftList = document.getElementById('draftList');
+      draftList.innerHTML = '<p class="text-xs text-slate-400">Memuat draft...</p>';
+
+      const tx = db.transaction("transaksi", "readonly");
+      const store = tx.objectStore("transaksi");
+      const req = store.getAll();
+
+      req.onsuccess = () => {
+        const items = req.result;
+        if (items.length === 0) {
+          draftList.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Tidak ada draft offline.</p>';
+          return;
+        }
+
+        draftList.innerHTML = items.map(item => `
+          <div class="p-3 bg-slate-50 border rounded-md flex justify-between items-center text-xs">
+            <div>
+              <p class="font-bold text-sky-800">${item.namaSumur}</p>
+              <p class="text-slate-500 text-[11px]">${item.lokasi}</p>
+              <p class="text-slate-500">MAT: <b>${item.matTotal} m</b> | Waktu: ${item.tanggalWaktu}</p>
+            </div>
+            <button onclick="deleteDraft('${item.idTransaksi}')" class="text-red-500 hover:text-red-700">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        `).join('');
+      };
+    }
+
+    function deleteDraft(id) {
+      const tx = db.transaction("transaksi", "readwrite");
+      tx.objectStore("transaksi").delete(id);
+      tx.oncomplete = () => {
+        renderDrafts();
+        updateDraftCount();
+      };
+    }
+
+    // SINKRONISASI KE SERVER
+    function syncDataToServer() {
+      if (!navigator.onLine) {
+        alert("Koneksi offline. Sinkronisasi dibatalkan.");
+        return;
+      }
+
+      const tx = db.transaction("transaksi", "readonly");
+      const store = tx.objectStore("transaksi");
+      const req = store.getAll();
+
+      req.onsuccess = () => {
+        const items = req.result;
+        if (items.length === 0) {
+          alert("Tidak ada draft untuk disinkronkan.");
+          return;
+        }
+
+        fetch(API_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "syncData", data: items })
+        })
+        .then(res => res.json())
+        .then(res => {
+          if (res.status === 'success') {
+            const delTx = db.transaction("transaksi", "readwrite");
+            const delStore = delTx.objectStore("transaksi");
+            res.syncedIds.forEach(id => delStore.delete(id));
+            delTx.oncomplete = () => {
+              alert(res.message);
+              renderDrafts();
+              updateDraftCount();
+            };
+          } else {
+            alert("Gagal sync: " + res.message);
+          }
+        })
+        .catch(err => alert("Error Server: " + err));
+      };
+    }
+
+    // LOAD RIWAYAT
+    function loadHistoryData() {
+      const list = document.getElementById('historyList');
+      list.innerHTML = '<p class="text-slate-400">Mengambil data dari server...</p>';
+
+      fetch(`${API_URL}?action=getHistory`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.status !== 'success' || !res.data || res.data.length === 0) {
+            list.innerHTML = '<p class="text-slate-400 text-center py-4">Belum ada data di server.</p>';
+            return;
+          }
+
+          list.innerHTML = res.data.map(r => `
+            <div class="p-2 border rounded-md bg-slate-50 space-y-1">
+              <div class="flex justify-between font-bold text-slate-700">
+                <span>${r.sumur}</span>
+                <span class="text-sky-700">MAT: ${r.matTotal} m</span>
+              </div>
+              <div class="text-slate-500 text-[11px]">${r.lokasi}</div>
+              <div class="flex justify-between text-slate-500 text-[11px]">
+                <span>Petugas: ${r.petugas}</span>
+                <span>${r.tanggal}</span>
+              </div>
+              ${r.driveUrl && r.driveUrl !== '-' ? `<a href="${r.driveUrl}" target="_blank" class="text-sky-600 underline block text-[11px]"><i class="fa-solid fa-folder-open"></i> Lihat Foto/Video Drive</a>` : ''}
+            </div>
+          `).join('');
+        })
+        .catch(err => {
+          list.innerHTML = '<p class="text-red-500 text-center py-4">Gagal memuat data dari server.</p>';
+        });
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log("Service Worker Registered"))
+        .catch(err => console.log("SW Registration Failed: ", err));
+    }
+  </script>
+</body>
+</html
