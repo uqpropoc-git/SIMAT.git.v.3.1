@@ -410,7 +410,9 @@
       if (tabName === 'chartTab') initChartFilterAndLoad();
     }
 
-    // KALKULASI REAL-TIME: TOTAL MAT = Z - (rata-rata - tinggiStick)
+    // KALKULASI REAL-TIME: 
+    // Rata-rata Kedalaman = ((Ukur 1 + Ukur 2 + Ukur 3) / 3) - Tinggi Stick
+    // Elevasi MAT = Nilai Z - Rata-Rata Kedalaman
     function calculateMAT() {
       const z = parseFloat(document.getElementById('nilaiZ').value) || 0;
       const stick = parseFloat(document.getElementById('tinggiStickPipa').value) || 0;
@@ -418,13 +420,14 @@
       const u2 = parseFloat(document.getElementById('pengukuran2').value) || 0;
       const u3 = parseFloat(document.getElementById('pengukuran3').value) || 0;
 
-      const avg = (u1 + u2 + u3) / 3;
-      const totalMAT = z - (avg - stick);
+      const meanUkur = (u1 + u2 + u3) / 3;
+      const rataRataKedalaman = meanUkur - stick;
+      const totalMAT = z - rataRataKedalaman;
 
-      document.getElementById('txtRataRata').innerText = avg.toFixed(2) + " m";
+      document.getElementById('txtRataRata').innerText = rataRataKedalaman.toFixed(2) + " m";
       document.getElementById('txtMATTotal').innerText = totalMAT.toFixed(2) + " m";
 
-      return { avg: avg.toFixed(2), matTotal: totalMAT.toFixed(2) };
+      return { avg: rataRataKedalaman.toFixed(2), matTotal: totalMAT.toFixed(2) };
     }
 
     // MANAGEMENT MEDIA (FOTO/VIDEO)
