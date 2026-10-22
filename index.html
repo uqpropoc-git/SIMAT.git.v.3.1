@@ -101,10 +101,8 @@
                 </select>
               </div>
               <div>
-                <label class="block text-xs font-medium text-slate-600 mb-1">Lokasi / Area *</label>
-                <select id="lokasi" required class="w-full p-2 border rounded-md text-sm bg-white focus:ring-1 focus:ring-sky-500 focus:outline-none">
-                  <option value="" disabled selected>-- Pilih Lokasi / Area --</option>
-                </select>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Lokasi / Area (Otomatis) *</label>
+                <input type="text" id="lokasi" readonly placeholder="Otomatis terisi dari sumur..." class="w-full p-2 border rounded-md text-sm bg-slate-100 text-slate-600 font-medium cursor-not-allowed">
               </div>
             </div>
           </div>
@@ -278,51 +276,23 @@
 
     // Master Sumur Data (Inisialisasi awal)
     let masterSumurData = [
-      { sumur: "BGH-02", lokasi: "PIT JATAH (0° 38' 46.593\" S - 117° 4' 47.274\" E", z: 79.970, tinggiStick: 0.52, kedalaman: 150.00 },
-      { sumur: "BGH-01", lokasi: "PITZ WSJ (0° 41' 40.356\" S - 117° 4' 7.545\" E", z: 86.710, tinggiStick: 0.55, kedalaman: 150.00 },
-      { sumur: "BUG-04", lokasi: "SIMPANG Z ATAS (0° 40' 22.416\" S - 117° 3' 11.797\" E", z: 134.721, tinggiStick: 0.46, kedalaman: 505.95 },
-      { sumur: "BUG-03R", lokasi: "SIMPANG Z BAWAH (0° 40' 18.801\" S - 117° 3' 6.815\" E", z: 116.072, tinggiStick: 0.45, kedalaman: 33.65 },
-      { sumur: "BUG-06", lokasi: "EX-PIT STOP PAMA (0° 41' 13.096\" S - 117° 2' 36.111\" E", z: 104.410, tinggiStick: 0.25, kedalaman: 500.00 },
-      { sumur: "BUG-05A", lokasi: "SW-C1 (0° 41' 8.569\" S - 117° 2' 31.711\" E", z: 93.324, tinggiStick: 0.32, kedalaman: 399.65 },
-      { sumur: "BUG-01", lokasi: "0° 39' 38.674\" S - 117° 3' 51.496\" E", z: 142.382, tinggiStick: 0.28, kedalaman: 415.92 },
-      { sumur: "BUG-02", lokasi: "0° 39' 43.852\" S - 117° 3' 58.420\" E", z: 133.043, tinggiStick: 0.35, kedalaman: 508.90 }
+      { sumur: "BGH-02", lokasi: "PIT JATAH (0° 38' 46.593\" S - 117° 4' 47.274\" E)", z: 79.970, tinggiStick: 0.52, kedalaman: 150.00 },
+      { sumur: "BGH-01", lokasi: "PIT WSJ (0° 41' 40.356\" S - 117° 4' 7.545\" E)", z: 86.710, tinggiStick: 0.55, kedalaman: 150.00 },
+      { sumur: "BUG-04", lokasi: "SIMPANG Z ATAS (0° 40' 22.416\" S - 117° 3' 11.797\" E)", z: 134.721, tinggiStick: 0.46, kedalaman: 505.95 },
+      { sumur: "BUG-03R", lokasi: "SIMPANG Z BAWAH (0° 40' 18.801\" S - 117° 3' 6.815\" E)", z: 116.072, tinggiStick: 0.45, kedalaman: 33.65 },
+      { sumur: "BUG-06", lokasi: "EX-PIT STOP PAMA (0° 41' 13.096\" S - 117° 2' 36.111\" E)", z: 104.41, tinggiStick: 0.25, kedalaman: 500.00 },
+      { sumur: "BUG-05A", lokasi: "SW-C1 (0° 41' 8.569\" S - 117° 2' 31.711\" E)", z: 93.324, tinggiStick: 0.32, kedalaman: 399.65 },
+      { sumur: "BUG-01", lokasi: "(0° 39' 38.674\" S - 117° 3' 51.496\" E)", z: 142.382, tinggiStick: 0.28, kedalaman: 415.92 },
+      { sumur: "BUG-02", lokasi: "(0° 39' 43.852\" S - 117° 3' 58.420\" E)", z: 133.043, tinggiStick: 0.35, kedalaman: 508.9 }
     ];
-
-    function populateInitialLokasi() {
-      const lokasiSelect = document.getElementById('lokasi');
-      const uniqueLokasi = [...new Set(masterSumurData.map(item => item.lokasi).filter(Boolean))];
-      
-      lokasiSelect.innerHTML = '<option value="" disabled selected>-- Pilih Lokasi / Area --</option>';
-      uniqueLokasi.forEach(lok => {
-        const opt = document.createElement('option');
-        opt.value = lok;
-        opt.textContent = lok;
-        lokasiSelect.appendChild(opt);
-      });
-    }
-
-    populateInitialLokasi();
 
     function autoSelectDetailSumur() {
       const selectedSumur = document.getElementById('namaSumur').value;
       const target = masterSumurData.find(item => item.sumur === selectedSumur);
 
       if (target) {
-        const lokasiSelect = document.getElementById('lokasi');
-
-        if (target.lokasi) {
-          let optionExists = Array.from(lokasiSelect.options).some(opt => opt.value === target.lokasi);
-          
-          if (!optionExists) {
-            const newOpt = document.createElement('option');
-            newOpt.value = target.lokasi;
-            newOpt.text = target.lokasi;
-            lokasiSelect.add(newOpt);
-          }
-          
-          lokasiSelect.value = target.lokasi;
-        }
-
+        // Otomatis isi nilai lokasi berdasarkan sumur yang dipilih dan jadikan readonly
+        document.getElementById('lokasi').value = target.lokasi || '-';
         document.getElementById('nilaiZ').value = parseFloat(target.z || 0).toFixed(2);
         document.getElementById('tinggiStickPipa').value = parseFloat(target.tinggiStick || 0).toFixed(2);
         document.getElementById('kedalamanSumur').value = parseFloat(target.kedalaman || 0).toFixed(2);
@@ -389,23 +359,10 @@
               selSumur.appendChild(opt);
             });
 
-            if (curSumurVal) selSumur.value = curSumurVal;
-
-            const selLokasi = document.getElementById('lokasi');
-            const curLokasiVal = selLokasi.value;
-            const uniqueLokasi = [...new Set(masterSumurData.map(item => item.lokasi).filter(Boolean))];
-            
-            selLokasi.innerHTML = '<option value="" disabled selected>-- Pilih Lokasi / Area --</option>';
-            uniqueLokasi.forEach(l => {
-              const opt = document.createElement('option');
-              opt.value = l;
-              opt.textContent = l;
-              selLokasi.appendChild(opt);
-            });
-
-            if (curLokasiVal) selLokasi.value = curLokasiVal;
-
-            if (selSumur.value) autoSelectDetailSumur();
+            if (curSumurVal) {
+              selSumur.value = curSumurVal;
+              autoSelectDetailSumur();
+            }
           }
         })
         .catch(err => console.log("Gagal memuat master sumur dari server: " + err));
@@ -431,9 +388,7 @@
       if (tabName === 'chartTab') initChartFilterAndLoad();
     }
 
-    // KALKULASI REAL-TIME: 
-    // Rata-rata Kedalaman = ((Ukur 1 + Ukur 2 + Ukur 3) / 3) - Tinggi Stick
-    // Elevasi MAT = Nilai Z - Rata-Rata Kedalaman
+    // KALKULASI REAL-TIME
     function calculateMAT() {
       const z = parseFloat(document.getElementById('nilaiZ').value) || 0;
       const stick = parseFloat(document.getElementById('tinggiStickPipa').value) || 0;
@@ -568,6 +523,7 @@
       tx.oncomplete = function() {
         alert("Data berhasil disimpan ke Draft Offline!");
         document.getElementById('matForm').reset();
+        document.getElementById('lokasi').value = "";
         resetMedia();
         calculateMAT();
         updateDraftCount();
@@ -702,21 +658,20 @@
     // GENERATOR WARNA DINAMIS PER ID SUMUR
     function getColorForSumur(idSumur) {
       const colorPalette = {
-        "BGH-02": { bg: "rgba(14, 165, 233, 0.75)", border: "rgb(14, 165, 233)" },   // Sky
-        "BGH-01": { bg: "rgba(16, 185, 129, 0.75)", border: "rgb(16, 185, 129)" },   // Emerald
-        "BUG-04": { bg: "rgba(245, 158, 11, 0.75)", border: "rgb(245, 158, 11)" },   // Amber
-        "BUG-03R": { bg: "rgba(239, 68, 68, 0.75)", border: "rgb(239, 68, 68)" },    // Red
-        "BUG-06": { bg: "rgba(168, 85, 247, 0.75)", border: "rgb(168, 85, 247)" },   // Purple
-        "BUG-05A": { bg: "rgba(236, 72, 153, 0.75)", border: "rgb(236, 72, 153)" },  // Pink
-        "BUG-01": { bg: "rgba(99, 102, 241, 0.75)", border: "rgb(99, 102, 241)" },   // Indigo
-        "BUG-02": { bg: "rgba(20, 184, 166, 0.75)", border: "rgb(20, 184, 166)" }    // Teal
+        "BGH-02": { bg: "rgba(14, 165, 233, 0.75)", border: "rgb(14, 165, 233)" },
+        "BGH-01": { bg: "rgba(16, 185, 129, 0.75)", border: "rgb(16, 185, 129)" },
+        "BUG-04": { bg: "rgba(245, 158, 11, 0.75)", border: "rgb(245, 158, 11)" },
+        "BUG-03R": { bg: "rgba(239, 68, 68, 0.75)", border: "rgb(239, 68, 68)" },
+        "BUG-06": { bg: "rgba(168, 85, 247, 0.75)", border: "rgb(168, 85, 247)" },
+        "BUG-05A": { bg: "rgba(236, 72, 153, 0.75)", border: "rgb(236, 72, 153)" },
+        "BUG-01": { bg: "rgba(99, 102, 241, 0.75)", border: "rgb(99, 102, 241)" },
+        "BUG-02": { bg: "rgba(20, 184, 166, 0.75)", border: "rgb(20, 184, 166)" }
       };
 
       if (colorPalette[idSumur]) {
         return colorPalette[idSumur];
       }
 
-      // Hash warna dinamis fallback untuk ID Sumur yang belum terdaftar
       let hash = 0;
       for (let i = 0; i < idSumur.length; i++) {
         hash = idSumur.charCodeAt(i) + ((hash << 5) - hash);
@@ -743,7 +698,7 @@
     }
 
     function renderChart() {
-      const filterVal = document.getElementById('filterBulan').value; // Format: "YYYY-MM"
+      const filterVal = document.getElementById('filterBulan').value;
       
       fetch(`${API_URL}?action=getHistory`)
         .then(res => res.json())
@@ -755,7 +710,7 @@
 
           const filteredData = res.data.filter(r => {
             if (!filterVal) return true;
-            let parts = r.tanggal.split(',')[0].trim().split('/'); // Formats: DD/MM/YYYY
+            let parts = r.tanggal.split(',')[0].trim().split('/');
             if (parts.length === 3) {
               let formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}`;
               return formattedDate === filterVal;
@@ -780,7 +735,6 @@
         myChart.destroy();
       }
 
-      // Memetakan warna unik per ID Sumur
       const bgColors = labels.map(sumur => getColorForSumur(sumur).bg);
       const borderColors = labels.map(sumur => getColorForSumur(sumur).border);
 
@@ -817,7 +771,7 @@
           },
           plugins: {
             legend: {
-              display: false // Sembunyikan legend tunggal agar lebih bersih karena warna berbeda per bar
+              display: false
             },
             tooltip: {
               callbacks: {
