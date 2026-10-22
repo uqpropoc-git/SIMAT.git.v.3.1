@@ -37,12 +37,24 @@
 
   <main class="max-w-3xl mx-auto px-4 mt-4 flex-1 w-full pb-6">
 
-    <!-- USER PETUGAS BANNER -->
-    <div class="bg-white p-3 rounded-lg shadow-sm border border-slate-200 mb-4 flex items-center gap-3">
-      <i class="fa-solid fa-user-gear text-sky-600 text-xl"></i>
-      <div class="flex-1">
-        <label class="block text-xs font-semibold text-slate-500 uppercase">Nama Petugas Lapangan</label>
-        <input type="text" id="namaPetugas" placeholder="Masukkan nama Anda..." class="w-full text-sm font-semibold text-slate-700 focus:outline-none border-b border-transparent focus:border-sky-500">
+    <!-- USER PETUGAS & TANGGAL BANNER -->
+    <div class="bg-white p-3 rounded-lg shadow-sm border border-slate-200 mb-4 space-y-3">
+      <!-- Nama Petugas Lapangan -->
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-user-gear text-sky-600 text-xl"></i>
+        <div class="flex-1">
+          <label class="block text-xs font-semibold text-slate-500 uppercase">Nama Petugas Lapangan</label>
+          <input type="text" id="namaPetugas" placeholder="Masukkan nama Anda..." class="w-full text-sm font-semibold text-slate-700 focus:outline-none border-b border-slate-200 focus:border-sky-500 py-1">
+        </div>
+      </div>
+      
+      <!-- Tanggal Input -->
+      <div class="flex items-center gap-3 border-t border-slate-100 pt-2">
+        <i class="fa-solid fa-calendar-day text-sky-600 text-xl"></i>
+        <div class="flex-1">
+          <label class="block text-xs font-semibold text-slate-500 uppercase">Tanggal Input Pengukuran</label>
+          <input type="date" id="tanggalInput" class="w-full text-sm font-semibold text-slate-700 focus:outline-none border-b border-slate-200 focus:border-sky-500 py-1 bg-transparent">
+        </div>
       </div>
     </div>
 
@@ -79,7 +91,7 @@
                 <select id="namaSumur" required onchange="autoSelectDetailSumur()" class="w-full p-2 border rounded-md text-sm bg-white focus:ring-1 focus:ring-sky-500 focus:outline-none">
                   <option value="" disabled selected>-- Pilih Sumur --</option>
                   <option value="BGH-02">BGH-02</option>
-                  <option value="BGH-01 (WSJ)">BGH-01</option>
+                  <option value="BGH-01">BGH-01</option>
                   <option value="BUG-04">BUG-04</option>
                   <option value="BUG-03R">BUG-03R</option>
                   <option value="BUG-06">BUG-06</option>
@@ -236,7 +248,7 @@
           </div>
         </div>
         
-        <div class="bg-slate-50 p-3 rounded-md border border-slate-200 relative h-72 flex items-center justify-center">
+        <div class="bg-slate-50 p-3 rounded-md border border-slate-200 relative h-80 flex items-center justify-center">
           <canvas id="matChart"></canvas>
         </div>
       </section>
@@ -255,16 +267,25 @@
 
     document.getElementById('currentYear').innerText = new Date().getFullYear();
 
-    // Master Sumur Data (Inisialisasi awal dengan properti z)
+    // Default Inisialisasi Tanggal Hari Ini (YYYY-MM-DD)
+    const tanggalInput = document.getElementById("tanggalInput");
+    const today = new Date().toISOString().split('T')[0];
+    tanggalInput.value = localStorage.getItem("tanggalInput") || today;
+    
+    tanggalInput.addEventListener("change", () => {
+      localStorage.setItem("tanggalInput", tanggalInput.value);
+    });
+
+    // Master Sumur Data (Inisialisasi awal)
     let masterSumurData = [
-      { sumur: "BGH-02", lokasi: "0° 38' 46.593\" S - 117° 4' 47.274\" E", z: 79.970, tinggiStick: 0.52, kedalaman: 150.00 },
-      { sumur: "BGH-01", lokasi: "0° 41' 40.356\" S - 117° 4' 7.545\" E", z: 86.710, tinggiStick: 0.55, kedalaman: 150.00 },
-      { sumur: "BUG-04", lokasi: "0° 40' 22.416\" S - 117° 3' 11.797\" E", z: 134.721, tinggiStick: 0.46, kedalaman: 505.95 },
-      { sumur: "BUG-03R", lokasi: "0° 40' 18.801\" S - 117° 3' 6.815\" E", z: 116.072, tinggiStick: 0.45, kedalaman: 33.65 },
-      { sumur: "BUG-06", lokasi: "0° 41' 13.096\" S - 117° 2' 36.111\" E", z: 104.41, tinggiStick: 0.25, kedalaman: 500.00 },
-      { sumur: "BUG-05A", lokasi: "0° 41' 8.569\" S - 117° 2' 31.711\" E", z: 93.324, tinggiStick: 0.32, kedalaman: 399.65 },
+      { sumur: "BGH-02", lokasi: "PIT JATAH (0° 38' 46.593\" S - 117° 4' 47.274\" E", z: 79.970, tinggiStick: 0.52, kedalaman: 150.00 },
+      { sumur: "BGH-01", lokasi: "PITZ WSJ (0° 41' 40.356\" S - 117° 4' 7.545\" E", z: 86.710, tinggiStick: 0.55, kedalaman: 150.00 },
+      { sumur: "BUG-04", lokasi: "SIMPANG Z ATAS (0° 40' 22.416\" S - 117° 3' 11.797\" E", z: 134.721, tinggiStick: 0.46, kedalaman: 505.95 },
+      { sumur: "BUG-03R", lokasi: "SIMPANG Z BAWAH (0° 40' 18.801\" S - 117° 3' 6.815\" E", z: 116.072, tinggiStick: 0.45, kedalaman: 33.65 },
+      { sumur: "BUG-06", lokasi: "EX-PIT STOP PAMA (0° 41' 13.096\" S - 117° 2' 36.111\" E", z: 104.410, tinggiStick: 0.25, kedalaman: 500.00 },
+      { sumur: "BUG-05A", lokasi: "SW-C1 (0° 41' 8.569\" S - 117° 2' 31.711\" E", z: 93.324, tinggiStick: 0.32, kedalaman: 399.65 },
       { sumur: "BUG-01", lokasi: "0° 39' 38.674\" S - 117° 3' 51.496\" E", z: 142.382, tinggiStick: 0.28, kedalaman: 415.92 },
-      { sumur: "BUG-02", lokasi: "0° 39' 43.852\" S - 117° 3' 58.420\" E", z: 133.043, tinggiStick: 0.35, kedalaman: 508.9 }
+      { sumur: "BUG-02", lokasi: "0° 39' 43.852\" S - 117° 3' 58.420\" E", z: 133.043, tinggiStick: 0.35, kedalaman: 508.90 }
     ];
 
     function populateInitialLokasi() {
@@ -516,10 +537,13 @@
       const calc = calculateMAT();
       const idTransaksi = 'TRX-' + Date.now();
       const fotosList = mediaBase64.map(m => m.data);
+      
+      const tglSelected = document.getElementById('tanggalInput').value || today;
 
       const item = {
         idTransaksi: idTransaksi,
-        tanggalWaktu: new Date().toLocaleString('id-ID'),
+        tanggalInput: tglSelected,
+        tanggalWaktu: `${tglSelected} ${new Date().toLocaleTimeString('id-ID')}`,
         namaPetugas: document.getElementById('namaPetugas').value || '-',
         namaSumur: document.getElementById('namaSumur').value,
         lokasi: document.getElementById('lokasi').value,
@@ -582,7 +606,7 @@
             <div>
               <p class="font-bold text-sky-800">${item.namaSumur}</p>
               <p class="text-slate-500 text-[11px]">${item.lokasi}</p>
-              <p class="text-slate-500">MAT: <b>${item.matTotal} m</b> | Waktu: ${item.tanggalWaktu}</p>
+              <p class="text-slate-500">MAT: <b>${item.matTotal} m</b> | Tgl Input: <b>${item.tanggalInput || '-'}</b></p>
             </div>
             <button onclick="deleteDraft('${item.idTransaksi}')" class="text-red-500 hover:text-red-700">
               <i class="fa-solid fa-trash"></i>
@@ -675,6 +699,35 @@
         });
     }
 
+    // GENERATOR WARNA DINAMIS PER ID SUMUR
+    function getColorForSumur(idSumur) {
+      const colorPalette = {
+        "BGH-02": { bg: "rgba(14, 165, 233, 0.75)", border: "rgb(14, 165, 233)" },   // Sky
+        "BGH-01": { bg: "rgba(16, 185, 129, 0.75)", border: "rgb(16, 185, 129)" },   // Emerald
+        "BUG-04": { bg: "rgba(245, 158, 11, 0.75)", border: "rgb(245, 158, 11)" },   // Amber
+        "BUG-03R": { bg: "rgba(239, 68, 68, 0.75)", border: "rgb(239, 68, 68)" },    // Red
+        "BUG-06": { bg: "rgba(168, 85, 247, 0.75)", border: "rgb(168, 85, 247)" },   // Purple
+        "BUG-05A": { bg: "rgba(236, 72, 153, 0.75)", border: "rgb(236, 72, 153)" },  // Pink
+        "BUG-01": { bg: "rgba(99, 102, 241, 0.75)", border: "rgb(99, 102, 241)" },   // Indigo
+        "BUG-02": { bg: "rgba(20, 184, 166, 0.75)", border: "rgb(20, 184, 166)" }    // Teal
+      };
+
+      if (colorPalette[idSumur]) {
+        return colorPalette[idSumur];
+      }
+
+      // Hash warna dinamis fallback untuk ID Sumur yang belum terdaftar
+      let hash = 0;
+      for (let i = 0; i < idSumur.length; i++) {
+        hash = idSumur.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const h = Math.abs(hash) % 360;
+      return {
+        bg: `hsla(${h}, 70%, 50%, 0.75)`,
+        border: `hsl(${h}, 70%, 40%)`
+      };
+    }
+
     // GRAFIK & FILTER BULAN
     let myChart = null;
 
@@ -702,9 +755,9 @@
 
           const filteredData = res.data.filter(r => {
             if (!filterVal) return true;
-            let parts = r.tanggal.split(',')[0].trim().split('/'); // Asumsi format DD/MM/YYYY
+            let parts = r.tanggal.split(',')[0].trim().split('/'); // Formats: DD/MM/YYYY
             if (parts.length === 3) {
-              let formattedDate = `${parts[2]}-${parts[1]}`;
+              let formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}`;
               return formattedDate === filterVal;
             }
             return r.tanggal.includes(filterVal);
@@ -727,17 +780,21 @@
         myChart.destroy();
       }
 
+      // Memetakan warna unik per ID Sumur
+      const bgColors = labels.map(sumur => getColorForSumur(sumur).bg);
+      const borderColors = labels.map(sumur => getColorForSumur(sumur).border);
+
       myChart = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels.length > 0 ? labels : ['Tidak Ada Data'],
           datasets: [{
-            label: 'Total MAT (m)',
+            label: 'Elevasi MAT (m)',
             data: dataValues.length > 0 ? dataValues : [0],
-            backgroundColor: 'rgba(2, 132, 199, 0.7)',
-            borderColor: 'rgba(2, 132, 199, 1)',
-            borderWidth: 1,
-            borderRadius: 4
+            backgroundColor: labels.length > 0 ? bgColors : 'rgba(2, 132, 199, 0.7)',
+            borderColor: labels.length > 0 ? borderColors : 'rgba(2, 132, 199, 1)',
+            borderWidth: 1.5,
+            borderRadius: 6
           }]
         },
         options: {
@@ -754,14 +811,20 @@
             x: {
               title: {
                 display: true,
-                text: 'Nama Sumur'
+                text: 'Nama / ID Sumur'
               }
             }
           },
           plugins: {
             legend: {
-              display: true,
-              position: 'top'
+              display: false // Sembunyikan legend tunggal agar lebih bersih karena warna berbeda per bar
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return ` Elevasi MAT: ${context.raw} m`;
+                }
+              }
             }
           }
         }
