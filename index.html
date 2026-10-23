@@ -244,16 +244,52 @@
 
       <!-- TAB 4: GRAFIK MAT -->
       <section id="chartTabContent" class="hidden space-y-4">
-        <div class="flex flex-col sm:flex-row justify-between items-center border-b pb-2 gap-2">
-          <h3 class="font-semibold text-sm text-slate-700">Grafik Total Muka Air Tanah (MAT)</h3>
-          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <input type="month" id="filterBulan" onchange="renderChart()" class="p-1.5 border rounded-md text-xs bg-white focus:ring-1 focus:ring-sky-500 focus:outline-none">
-            <button onclick="exportChartImage()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1.5 rounded-md font-medium flex items-center gap-1 transition whitespace-nowrap">
+        <div class="flex flex-col gap-3 border-b pb-3">
+          <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
+            <h3 class="font-semibold text-sm text-slate-700 flex items-center gap-2">
+              <i class="fa-solid fa-chart-column text-sky-600"></i> Grafik Elevasi Muka Air Tanah (MAT)
+            </h3>
+            <button onclick="exportChartImage()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1.5 rounded-md font-medium flex items-center gap-1 transition shadow-sm w-full sm:w-auto justify-center">
               <i class="fa-solid fa-download"></i> Export Grafik (PNG)
             </button>
           </div>
+
+          <!-- KONTROL INTERAKTIF PILIHAN BULAN & TAHUN (TOMBOL) -->
+          <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+            <!-- Navigasi Bulan Cepat (< Bulan >) -->
+            <div class="flex items-center justify-between gap-2">
+              <button type="button" onclick="changeMonth(-1)" class="px-3 py-1.5 bg-white border border-slate-300 rounded-md text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-600 hover:border-sky-300 transition flex items-center gap-1 shadow-sm">
+                <i class="fa-solid fa-chevron-left"></i> Bln Sebelumnya
+              </button>
+
+              <span id="labelPeriodeAktif" class="font-bold text-sm text-sky-800 bg-white px-3 py-1.5 rounded-md border border-sky-200 shadow-sm text-center min-w-[140px]">
+                -
+              </span>
+
+              <button type="button" onclick="changeMonth(1)" class="px-3 py-1.5 bg-white border border-slate-300 rounded-md text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-600 hover:border-sky-300 transition flex items-center gap-1 shadow-sm">
+                Bln Berikutnya <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+
+            <!-- Tombol Pilihan Bulan (Jan - Des) -->
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Pilih Bulan:</label>
+              <div id="btnGroupBulan" class="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
+                <!-- Tombol bulan 01-12 di-generate otomatis via JS -->
+              </div>
+            </div>
+
+            <!-- Tombol Pilihan Tahun -->
+            <div class="flex items-center gap-2 border-t border-slate-200 pt-2">
+              <label class="text-[11px] font-semibold text-slate-500 uppercase whitespace-nowrap">Tahun:</label>
+              <div id="btnGroupTahun" class="flex items-center gap-1.5 overflow-x-auto w-full py-1">
+                <!-- Tombol tahun di-generate otomatis via JS -->
+              </div>
+            </div>
+          </div>
         </div>
         
+        <!-- CANVAS GRAFIK -->
         <div class="bg-slate-50 p-3 rounded-md border border-slate-200 relative h-80 flex items-center justify-center">
           <canvas id="matChart"></canvas>
         </div>
@@ -284,8 +320,20 @@
 
     // Inisialisasi default filter bulan saat load
     const currentYearMonth = today.substring(0, 7);
-    document.getElementById('filterBulan').value = currentYearMonth;
     document.getElementById('filterBulanHistory').value = currentYearMonth;
+
+    // VARIABEL STATE PERIODE GRAFIK
+    let selectedYear = new Date().getFullYear();
+    let selectedMonth = new Date().getMonth() + 1; // 1 - 12
+
+    const namaBulanList = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+
+    document.addEventListener("DOMContentLoaded", function() {
+      initChartControls();
+    });
 
     // Master Sumur Data
     let masterSumurData = [
@@ -293,7 +341,7 @@
       { sumur: "BGH-01", lokasi: "PIT WSJ (0° 41' 40.356\" S - 117° 4' 7.545\" E)", z: 86.710, tinggiStick: 0.55, kedalaman: 150.00 },
       { sumur: "BUG-04", lokasi: "SIMPANG Z ATAS (0° 40' 22.416\" S - 117° 3' 11.797\" E)", z: 134.721, tinggiStick: 0.46, kedalaman: 505.95 },
       { sumur: "BUG-03R", lokasi: "SIMPANG Z BAWAH (0° 40' 18.801\" S - 117° 3' 6.815\" E)", z: 116.072, tinggiStick: 0.45, kedalaman: 33.65 },
-      { sumur: "BUG-06", lokasi: "EX-PIT STOP PAMA (0° 41' 13.096\" S - 117° 2' 36.111\" E)", z: 104.41, tinggiStick: 0.25, kedalaman: 500.00 },
+      { sumur: "BUG-06", lokasi: "EX-PIT STOP PAMA (0° 41' 13.096\" S - 117° 2' 36.111\" E)", z: 104.410, tinggiStick: 0.25, kedalaman: 500.00 },
       { sumur: "BUG-05A", lokasi: "SW-C1 (0° 41' 8.569\" S - 117° 2' 31.711\" E)", z: 93.324, tinggiStick: 0.32, kedalaman: 399.65 },
       { sumur: "BUG-01", lokasi: "(0° 39' 38.674\" S - 117° 3' 51.496\" E)", z: 142.382, tinggiStick: 0.28, kedalaman: 415.92 },
       { sumur: "BUG-02", lokasi: "(0° 39' 43.852\" S - 117° 3' 58.420\" E)", z: 133.043, tinggiStick: 0.35, kedalaman: 508.9 }
@@ -397,7 +445,10 @@
 
       if (tabName === 'draftTab') renderDrafts();
       if (tabName === 'historyTab') loadHistoryData();
-      if (tabName === 'chartTab') renderChart();
+      if (tabName === 'chartTab') {
+        initChartControls();
+        renderChart();
+      }
     }
 
     // KALKULASI REAL-TIME
@@ -758,11 +809,88 @@
       };
     }
 
-    // GRAFIK & FILTER BULAN
+    // GRAFIK & LOGIKA TOMBOL INTERAKTIF
     let myChart = null;
 
+    function initChartControls() {
+      renderMonthButtons();
+      renderYearButtons();
+      updatePeriodeLabel();
+    }
+
+    function renderMonthButtons() {
+      const container = document.getElementById('btnGroupBulan');
+      if (!container) return;
+
+      container.innerHTML = namaBulanList.map((bln, idx) => {
+        const monthNum = idx + 1;
+        const isActive = monthNum === selectedMonth;
+        const activeClass = isActive 
+          ? "bg-sky-600 text-white font-bold border-sky-600 shadow" 
+          : "bg-white text-slate-700 border-slate-300 hover:bg-sky-50 hover:text-sky-600";
+
+        return `
+          <button type="button" onclick="selectMonth(${monthNum})" class="py-1.5 px-2 text-xs rounded-md border text-center transition ${activeClass}">
+            ${bln.substring(0, 3)}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderYearButtons() {
+      const container = document.getElementById('btnGroupTahun');
+      if (!container) return;
+
+      const currentYear = new Date().getFullYear();
+      const years = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1];
+
+      container.innerHTML = years.map(yr => {
+        const isActive = yr === selectedYear;
+        const activeClass = isActive 
+          ? "bg-sky-600 text-white font-bold border-sky-600 shadow" 
+          : "bg-white text-slate-700 border-slate-300 hover:bg-sky-50 hover:text-sky-600";
+
+        return `
+          <button type="button" onclick="selectYear(${yr})" class="py-1 px-3 text-xs rounded-md border transition whitespace-nowrap ${activeClass}">
+            ${yr}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectMonth(m) {
+      selectedMonth = m;
+      initChartControls();
+      renderChart();
+    }
+
+    function selectYear(y) {
+      selectedYear = y;
+      initChartControls();
+      renderChart();
+    }
+
+    function changeMonth(delta) {
+      selectedMonth += delta;
+      if (selectedMonth > 12) {
+        selectedMonth = 1;
+        selectedYear++;
+      } else if (selectedMonth < 1) {
+        selectedMonth = 12;
+        selectedYear--;
+      }
+      initChartControls();
+      renderChart();
+    }
+
+    function updatePeriodeLabel() {
+      const label = `${namaBulanList[selectedMonth - 1]} ${selectedYear}`;
+      const lblElement = document.getElementById('labelPeriodeAktif');
+      if (lblElement) lblElement.innerText = label;
+    }
+
     function renderChart() {
-      const filterVal = document.getElementById('filterBulan').value;
+      const filterVal = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`;
       
       fetch(`${API_URL}?action=getHistory`)
         .then(res => res.json())
@@ -853,11 +981,11 @@
         alert("Grafik belum dimuat.");
         return;
       }
-      const filterVal = document.getElementById('filterBulan').value;
+      const filterVal = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`;
       const imageURI = myChart.toBase64Image();
       const link = document.createElement('a');
       link.href = imageURI;
-      link.download = `Grafik_MAT_${filterVal || 'Periode'}.png`;
+      link.download = `Grafik_MAT_${filterVal}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
